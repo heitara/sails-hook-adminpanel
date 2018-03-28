@@ -46,6 +46,10 @@ mixin listValue(key, field, value)
         td #{_.pluck(value, field.config.displayField).join(', ')}
       else
         td &nbsp;
+    when 'json'
+      td #{JSON.stringify(value)}
+    when 'image'
+      td #{value}
     when 'boolean'
       td
         if value

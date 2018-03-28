@@ -29,7 +29,7 @@ mixin fieldWidget(key, field, value, instance)
       when 'boolean'
         +inputCheckbox(key, field, value)
       when 'binary'
-        +inputCheckbox(key, field, value)        
+        +inputCheckbox(key, field, value)
       when 'text'
         +textarea(key, field, value)
       when 'mediumtext'
@@ -37,9 +37,11 @@ mixin fieldWidget(key, field, value, instance)
       when 'longtext'
         +textarea(key, field, value)
       when 'json'
-        +textarea(key, field, JSON.stringify(value))
+        +jsoneditor(key, field, value)
       when 'array'
         +textarea(key, field, value)
+      when 'image'
+        +image(key, field, value)
       default
         +inputText(key, field, value)
 
@@ -52,6 +54,15 @@ mixin inputText(key, field, value)
     paper-input(type='file', label=field.config.title, name=key, id='form-#{key}', required=field.config.required || false, disabled=field.config.disabled || false, value=value)
   else
     paper-input(type='text', label=field.config.title, name=key, id='form-#{key}', required=field.config.required || false, disabled=field.config.disabled || false, value=value)
+
+mixin jsoneditor(key, field, value)
+  - var json = value
+  - if (typeof(value) !== 'string') {
+  - json = JSON.stringify(value)
+  - }
+  paper-input(type='text', style='width:90%; display:inline', name=key, id='form-#{key}', required=field.config.required || false, disabled=false, value=json, schema=JSON.stringify(field.config.schema) readonly).form-control
+  a(href=link,form='form-#{key}').btn.btn-info.json-editor
+      i(class='glyphicon-edit').glyphicon
 
 mixin inputPassword(key, field, value)
   paper-input(type='password', label=field.config.title, name=key, id='form-#{key}', required=field.config.required || false, disabled=field.config.disabled || false value=value)
@@ -81,6 +92,15 @@ mixin select(key, field, value)
           option(value=opt, selected=(opt == value)) #{opt}
 
 mixin textarea(key, field, value)
+  if field.config.editor
+    | &nbsp;#{field.config.title}
+    br
+    textarea(name=key, id='form-#{key}', required=field.config.required || false, disabled=field.config.disabled || false) #{value}
+  else
+    paper-textarea(name=key, value=value, label=field.config.title, id='form-#{key}', required=field.config.required || false, disabled=field.config.disabled || false)
+
+
+mixin image(key, field, value)
   if field.config.editor
     | &nbsp;#{field.config.title}
     br
@@ -131,3 +151,58 @@ mixin installEditors(fields, record)
           |   },
           |   !{typeof value === 'object' ? JSON.stringify(value) : JSON.parse(JSON.stringify(value))}
           | );
+
+mixin setupJsonEditor()
+  script(type='text/javascript').
+    $(document).ready(function () {
+      $(".json-editor").click(function () {
+        var parentId = $(this).attr("form");
+        var parentDOM = $(this).parent().find('#'+parentId);
+        var modalPopUp = $('#modal-content').modal({
+          show: true
+        });
+
+        var jsonData = {};
+        var jsonSchema = parentDOM.attr("schema") && JSON.parse(parentDOM.attr("schema")) || {"type":"object"};
+
+        var jsonEditorDiv = modalPopUp.find(".modal-body")[0];
+        jsonEditorDiv.innerHTML = '';
+
+        var options = {theme: 'bootstrap3', schema: jsonSchema};
+        if(parentDOM.val().length > 0) {
+          jsonData = JSON.parse(parentDOM.val());
+          options.startval = jsonData;
+        }
+        var editor = new JSONEditor(jsonEditorDiv, options);
+        console.log(jsonData);
+
+        editor.on('ready', function () {
+          // Now the api methods will be available
+          editor.validate();
+        });
+
+        modalPopUp.find(".btn-primary").click(function (e) {
+          var jsonObj = editor.getValue();
+          parentDOM.val(JSON.stringify(jsonObj));
+          modalPopUp.modal('hide');
+        });
+
+      });
+
+    });
+
+mixin popUpHidden()
+  div#modal-content.modal.fade(tabindex="-1" role="dialog")
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type="button" data-dismiss="modal")
+            |×
+          .h3
+            |JSON Editor
+        .modal-body
+        .modal-footer
+          a.btn(href="#" data-dismiss="modal")
+            |Close
+          a.btn.btn-primary(href="#")
+            |Save changes

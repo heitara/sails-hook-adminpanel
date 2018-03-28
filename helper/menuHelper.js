@@ -133,12 +133,34 @@ module.exports = function menuHelper(config) {
             if (!model) {
                 return url;
             }
-            var words = _.words(url, /\:+[a-z\-_]*/gi);
+            var words = _.words(url, /\:+[a-z\-_\\.0-9]*/gi);
             // Replacing props
             _.forEach(words, function(word) {
                 var variable = word.replace(':', '');
-                if (model && model[variable]) {
-                    url = url.replace(word, model[variable]);
+                var parts = variable.split(".");
+                var field = parts[0];
+                if (model && model[field]) {
+
+                    var value = model[field];
+
+                    if(typeof value === "object") {
+                        //narrow down
+                        for (var i = 1; i < parts.length; i++) {
+                            var subPath = parts[i];
+                            if(!isNaN(subPath)) {
+                                value = value[parseInt(subPath)];
+                            } else {
+                                if(value) {
+                                    value = value[subPath];
+                                }
+                            }
+                            console.log(subPath, " : ",  JSON.stringify(value));
+                        }
+                    }
+
+                    // console.log(JSON.stringify(value));
+
+                    url = url.replace(word, value);
                 }
             });
             return url;
