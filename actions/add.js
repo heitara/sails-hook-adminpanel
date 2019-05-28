@@ -4,11 +4,14 @@ var util = require('../lib/adminUtil');
 var request = require('../lib/requestProcessor');
 var views = require('../helper/viewsHelper');
 var fieldsHelper = require('../helper/fieldsHelper');
+//const utilNode = require('util');
 
 var async = require('async');
 
 module.exports = function(req, res) {
     var instance = util.findInstanceObject(req);
+    // sails.log.info("Instance: " + JSON.stringify(instance.uri));
+    //sails.log.info(utilNode.inspect(instance, { showHidden: true, depth: 1 }));
     if (!instance.model) {
         return res.notFound();
     }
@@ -31,11 +34,9 @@ module.exports = function(req, res) {
                 instance.model.create(reqData).exec(function(err, record) {
                     if (err) {
                         req._sails.log.error(err);
-                        req.flash('adminError', err.details || 'Something went wrong...');
                         data = reqData;
                         return done(err);
                     }
-                    req.flash('adminSuccess', 'Your record was created !');
                     return done();
                 });
             } else {

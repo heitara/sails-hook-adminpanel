@@ -58,7 +58,6 @@ module.exports = function(req, res) {
                         message: 'Record was removed successfuly'
                     });
                 }
-                req.flash('adminSuccess', 'Record was removed successfuly');
                 res.redirect(instance.uri);
             });
         });

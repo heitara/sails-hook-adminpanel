@@ -6,11 +6,16 @@ var requestProcessor = require('../lib/requestProcessor');
 var views = require('../helper/viewsHelper');
 var fieldsHelper = require('../helper/fieldsHelper');
 var sortingHelper = require('../helper/sortingHelper');
+const utilNode = require('util');
 
 var async = require('async');
 
 module.exports = function(req, res) {
     var instance = util.findInstanceObject(req);
+
+
+    sails.log.info(utilNode.inspect(instance, { showHidden: false, depth: 2 }));
+
     if (!instance.model) {
         return res.notFound();
     }
@@ -26,7 +31,7 @@ module.exports = function(req, res) {
     }
 
     var total = 0;
-    var records = [];
+    let records = [];
     var fields = fieldsHelper.getFields(req, instance, 'list');
 
     //Processing sorting
@@ -51,7 +56,9 @@ module.exports = function(req, res) {
             fieldsHelper.getFieldsToPopulate(fields).forEach(function(val) {
                 query.populate(val);
             });
-            query.paginate({page: page, limit: instance.config.list.limit || 15})
+            let limit = instance.config.list.limit || 15;
+            let skip = (page - 1) * limit;
+            query.skip(skip).limit(limit)
                 .exec(function(err, list) {
                     if (err) return done(err);
                     records = list;
@@ -64,6 +71,14 @@ module.exports = function(req, res) {
             req._sails.log.error(err);
             return res.serverError(err);
         }
+        // sails.log.info(utilNode.inspect({
+        //     requestProcessor: requestProcessor,
+        //     sortingHelper: sortingHelper,
+        //     instance: instance,
+        //     total: total,
+        //     list: records,
+        //     fields: fields
+        // }, { showHidden: true, depth: 2 }));
         res.viewAdmin({
             requestProcessor: requestProcessor,
             sortingHelper: sortingHelper,
