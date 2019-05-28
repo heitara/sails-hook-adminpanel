@@ -19,17 +19,17 @@ mixin listRow(obj, instance)
 
       if instance.config.view
         | &nbsp;
-        a(href='#{instance.uri}/view/#{obj[idField]}')
+        a(href=instance.uri+'/view/'+obj[idField])
           iron-icon(icon='visibility')
 
       if instance.config.edit
         | &nbsp;
-        a(href='#{instance.uri}/edit/#{obj[idField]}')
+        a(href=instance.uri+'/edit/'+obj[idField])
           iron-icon(icon='create')
           //| &nbsp;#{__('Edit')}
       if instance.config.remove
         | &nbsp;
-        a(href='#{instance.uri}/remove/#{obj[idField]}', onclick="return confirm('#{__('Are you sure ?')}')")
+        a(href=instance.uri+'/remove/'+obj[idField], onclick="return confirm('#{__('Are you sure ?')}')")
           iron-icon(icon='delete')
 
 mixin listValue(key, field, value)

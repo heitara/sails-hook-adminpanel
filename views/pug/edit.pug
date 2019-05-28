@@ -10,12 +10,12 @@ block body
       +globalActions('edit', instance, record)
   .layout
     div
-      a(href='#{instance.uri}')
+      a(href=instance.uri)
         paper-button(raised='').button-blue
           iron-icon(icon='arrow-back')
           | &nbsp;Back to list
 
-    form(action='#{instance.uri}/edit/#{record[idField]}', method='POST', enctype="multipart/form-data")#form
+    form(action=instance.uri+'/edit/'+record[idField], method='POST', enctype="multipart/form-data")#form
       each field, key in fields
         - var value = locals.adminpanel.viewHelper.getFieldValue(key, field, record);
         +fieldWidget(key, field, value, instance)

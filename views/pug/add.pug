@@ -4,29 +4,28 @@ include ./mixin/widgets
 include ./mixin/actions
 
 block body
-  - var idField = locals.adminpanel.configHelper.getIdentifierField(instance.config.model);
-  .layout.horizontal
+  .horizontal.layout
     .flex
-      +globalActions('edit', instance, record)
+      +globalActions('add', instance)
+
   .layout
     div
-      a(href='#{instance.uri}')
+      a(href=instance.uri)
         paper-button(raised='').button-blue
           iron-icon(icon='arrow-back')
           | &nbsp;Back to list
 
-    form(action='#{instance.uri}/edit/#{record[idField]}', method='POST', enctype="multipart/form-data")#form
+    form(action=instance.uri+'/add', method='POST', enctype="multipart/form-data")#form
       each field, key in fields
-        - var value = locals.adminpanel.viewHelper.getFieldValue(key, field, record);
-        +fieldWidget(key, field, value, instance)
+        +fieldWidget(key, field, data[key], instance)
       if adminpanel.configHelper.isCsrfEnabled()
         div
           input(type="hidden", name="_csrf", value=_csrf)
-      div
+      p
         paper-button(raised='', onclick="submitForm()")#submit.button-green
           | &nbsp;Submit
+        +inlineActions(instance, {}, 'add')
 
-        +inlineActions(instance, record, 'edit')
 
 block js
   script.
@@ -46,4 +45,4 @@ block js
       document.getElementById('form').submit();
     }
 
-  +installEditors(fields, record)
+  +installEditors(fields, null)
